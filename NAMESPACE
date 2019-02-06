@@ -1,0 +1,16 @@
+importFrom(R6, R6Class)
+importFrom(magrittr,"%>%")
+importMethodsFrom(validate, confront, summary)
+
+export(make_key)
+export(gate)
+export(Proto)
+export(Item, Collection)
+#export(read_mkm)
+#export(Sheet, Section)
+
+#export(parse_rows, parse_cols, parse_both)
+export(parse_rlist, parse_clist)
+export(parse_df, parse_tdf)
+export(parse_mat, parse_tmat)
+#S3method(print, object_with_msg)
