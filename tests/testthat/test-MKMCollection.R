@@ -363,4 +363,15 @@ test_that("Collections can template off other collections (safely)", {
     expect_equal(clct2$name, pre_change)
 })
 
+test_that("Collections can parse bits twice", {
+    clct <- mkm:::Collection$new(name = "test", path = "./test_files/mkm_basic_file.xlsx")
+    clct$content <- list(
+        Item$new(name = "meta", section_text = "takiwaR Metadata", parser = parse_rlist),
+        Item$new(name = "substrate", section_text = "Substrate (% Cover)", parser = parse_tmat),
+        Item$new(name = "substrate2", section_text = "Substrate (% Cover)", parser = parse_tmat))
+    expect_null(clct$raw)
+    expect_silent(clct$read()$parse())
+    expect_equal(clct$content$substrate$content, clct$content$substrate2$content)
+})
+
 

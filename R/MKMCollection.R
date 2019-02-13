@@ -56,8 +56,15 @@ Collection <- R6Class(
             # Chunk the raw content and pass to the objects for parsing...
             runlist <- data.frame(names = names(st), st = unlist(st),
                                   stringsAsFactors = F, row.names = NULL)
-            runlist <- runlist[order(runlist$st),]
-            runlist$en <- c(runlist$st[seq_along(runlist$names)[-1]]-1, nrow(self$raw$text))
+
+            # Need to work on unique values...
+            st <- unique(unlist(st))
+            st <- st[order(st)]
+            en <- c(st[seq_along(st)[-1]]-1, nrow(self$raw$text))
+            unique_rlst <- data.frame(st = st, en = en,
+                                      stringsAsFactors = F, row.names = NULL)
+            runlist <- dplyr::left_join(runlist, unique_rlst, by = 'st')
+
             for (a in seq_along(runlist$names)) {
                 ndx <- seq(from = runlist$st[a], to = runlist$en[a])
                 rawdat <- rapply(object = self$raw, f = mat_select_rows,
