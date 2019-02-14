@@ -101,7 +101,7 @@ to_list <- function(x){
         vals <- x[a,]
         vals <- vals[!is.na(vals)] # Drop empty cells
         vals <- stringr::str_trim(vals) # Trim. Shouldn't really be needed...
-        vals <- type.convert(vals, as.is=TRUE) # Guess
+        vals <- utils::type.convert(vals, as.is=TRUE) # Guess
         if(length(vals) > 0){
             xout[[keys[a]]] <- vals
         } else {
@@ -124,7 +124,7 @@ to_data_frame <- function(x){
     if(!all(is.na(id_col))){
         x <- tibble::add_column(.data = x, .id = id_col, .before = 1L)
     }
-    x <- lapply(x, type.convert, as.is = TRUE)
+    x <- lapply(x, utils::type.convert, as.is = TRUE)
     x <- as.data.frame(x, stringsAsFactors = FALSE)
     rownames(x) <- NULL
     return(x)
@@ -151,7 +151,7 @@ to_matrix <- function(x){
         rnmes <- make_key(x[-1, 1]) ## TODO: Relax this assumption? Rely on back ticks?
     }
 
-    x <- type.convert(x[-1, -1, drop = FALSE], as.is = TRUE)
+    x <- utils::type.convert(x[-1, -1, drop = FALSE], as.is = TRUE)
     colnames(x) <- cnmes
     rownames(x) <- rnmes
     return(x)

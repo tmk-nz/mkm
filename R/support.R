@@ -48,7 +48,7 @@ read_mkm <- function(path, sheet = NULL){
         # I don't like it, but in this case I think it is cleaner.
         raw$all <- raw %>% dplyr::select(logical, numeric, date, character) %>%
             dplyr::mutate_all(as.character) %>%
-            purrr::pmap_chr(mkm:::unique_not_na)
+            purrr::pmap_chr(unique_not_na)
 
         txt <- raw %>% dplyr::select(row, col, all) %>%
             tidyr::spread(key = col, value = all) %>%
@@ -85,7 +85,7 @@ read_mkm <- function(path, sheet = NULL){
         dimnames(txt) <- NULL
         txt <- raw_text(txt, remove_section_text = FALSE)
     } else if(ext == "csv"){
-        raw <- read.csv(file = path, header = FALSE, colClasses = "character",
+        raw <- utils::read.csv(file = path, header = FALSE, colClasses = "character",
                         stringsAsFactors = FALSE, na.strings = "")
         txt <- raw %>% as.matrix()
         dimnames(txt) <- NULL
