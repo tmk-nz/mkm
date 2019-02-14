@@ -1,6 +1,6 @@
 # MKM - Mahinga Kai Monitoring
 
-This R package is designed as a replacement to `takiwaR`[takR] with a specific focus on reading, parsing and validating structured spreadsheets. 
+This R package is designed as a replacement to [`takiwaR`][takR] with a specific focus on reading, parsing and validating structured spreadsheets. 
 
 ## Installing
 
