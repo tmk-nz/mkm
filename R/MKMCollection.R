@@ -57,7 +57,7 @@ Collection <- R6Class(
             runlist <- data.frame(names = names(st), st = unlist(st),
                                   stringsAsFactors = F, row.names = NULL)
 
-            # Need to work on unique values...
+            # The following ensures we onlt work on unique values...
             st <- unique(unlist(st))
             st <- st[order(st)]
             en <- c(st[seq_along(st)[-1]]-1, nrow(self$raw$text))
@@ -148,6 +148,7 @@ Collection <- R6Class(
             private$.meta <- NULL
         },
 
+        # TODO: Rename this as clone_safe??
         template = function() {
             out <- self$clone(deep = TRUE)
             for(a in seq_along(out$content)){
@@ -159,7 +160,6 @@ Collection <- R6Class(
             out$undefine_meta()
             return(out)
         }
-
     ),
 
     active = list(

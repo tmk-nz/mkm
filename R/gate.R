@@ -9,7 +9,7 @@ gate = function(value, ...){
     pos <- lapply(pos, fingerprint)
 
     # We don't match class exactly, but rather look for inheritance...
-    # So here replace class with inheritance.
+    # So here replace 'class' with a logical for 'inheritance'.
     # inh <- mapply(inherits, what = lapply(pos, '[[', 'class'), MoreArgs = list(x = value))
     pos <- lapply(pos, function(x, v) { x$inherits <- inherits(v, x$class); x$class <- NULL; return(x) }, value)
     val$class <- NULL
