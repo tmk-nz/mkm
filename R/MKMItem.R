@@ -73,8 +73,8 @@ Item <- R6Class(
             }
             self$content <- self$parser(self$raw)
             if(is.null(self$content)){
-                msg <- "Parser function returned NULL"
-                warning(msg, immediate. = TRUE)
+                msg <- sprintf("Parser for `%s` returned NULL", self$name)
+                warning(msg, immediate. = TRUE, call. = FALSE)
             }
             invisible(self)
         },
