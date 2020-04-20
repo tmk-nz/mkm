@@ -1,175 +1,151 @@
 # MKM Parsing + Coercion functions
 # parse_* functions take raw input (which is a list with 'text' and 'format' components) and produce a base R type (list, dataframe or matrix)
 
-parse_rlist <- function(x){
-    x <- raw_text(x)
-    x <- x[-1, , drop = FALSE] # Row 1 is always removed for these objects
-    to_list(x)
-}
+parse_mkm <- function(x, definition = NULL, .default = "to_df"){
+    # Setup / check parse list
+    pl <- lapply(definition, .get_parse_fn)
 
-parse_clist <- function(x){
-    x <- raw_text(x)
-    x <- x[ , -1, drop = FALSE] # Column 1 is always removed for these objects
-    to_list(t(x))
-}
+    out <- list()
+    nmes <- names(x)
 
-parse_df <- function(x){
-    x <- raw_text(x)
-    to_data_frame(x)
-}
+    for(a in seq_along(nmes)){
 
-parse_tdf <- function(x){
-    x <- raw_text(x)
-    to_data_frame(t(x))
-}
+        nme <- nmes[a]
+        fn <- pl[[nme]]
 
-parse_mat <- function(x){
-    x <- raw_text(x)
-    to_matrix(x)
-}
-
-parse_tmat <- function(x){
-    x <- raw_text(x)
-    to_matrix(t(x))
-}
-
-## Consider mkm specific functionsm perc, pa, sf, etc
-
-# Support functions... Not Exported
-raw_text <- function(x, remove_section_text = TRUE, remove_empty_cols = TRUE, remove_empty_rows = TRUE){
-    # The 'master text parser'.
-    # Is beligerant about input types. Coerces dataframes and lists if possible.
-    # By default, it strips totally NA columns and rows
-    # By default it sets the 'section text' to NA
-    # Returns a character matrix with no dimnames.
-    if(is.data.frame(x)){
-        x <- x %>% dplyr::mutate_all(as.character) %>% as.matrix()
-    }
-
-    if(is.list(x)) {
-        has_text <- "text" %in% names(x)
-        if(!has_text){
-            stop("If input is a list, it must have an item named 'text'")
+        if(rlang::is_null(fn)){
+            if(nme == "meta"){
+                fn <- to_meta
+            } else {
+                fn <- .get_parse_fn(.default) # Default
+            }
         }
-        x <- raw_text(x$text,
-                      remove_section_text = remove_section_text,
-                      remove_empty_cols = remove_empty_cols,
-                      remove_empty_rows = remove_empty_rows)
-        return(x)
-    }
 
-    if(!is.matrix(x) || !is.character(x) || length(dim(x)) != 2 ) {
-        stop("Input must be a character matrix with two dimensions")
+        out[[nme]] <- fn(x[[nme]])
     }
-
-    # Detect and remove totally empty (NA only) columns
-    if(remove_empty_cols){
-        indx <- apply(x, 2, all_is_na)
-        x <- mat_select_cols(x, !indx)
-    }
-
-    # Detect and remove totally empty (NA only) rows
-    if(remove_empty_rows){
-        indx <- apply(x, 1, all_is_na)
-        x <- mat_select_rows(x, !indx)
-    }
-
-    # After all of this, cell x[1, 1], if it exists could be a section header / text.
-    # Optionally set to NA.
-    if(ncol(x) && nrow(x) && remove_section_text){
-        x[1, 1] <- NA
-    }
-
-    dimnames(x) <- NULL # row and col names have no meaning, if somehow they still exist.
-    return(x)
+    return(out)
 }
 
-to_list <- function(x){
-    # Coerces to a list.
-    # Assumes the first column is names (keys)
-    # Drops empty cells by defualt
-    if(!is.matrix(x) || !is.character(x) || length(dim(x)) != 2 ) {
-        stop("Input must be a character matrix with two dimensions")
+to_lst <- function(x){
+    x <- .raw_dat(x)
+    .to_list(x)
+}
+
+to_tlst <- function(x){
+    x <- .raw_dat(x)
+    .to_list(.t(x))
+}
+
+to_meta <- function(x){
+    x <- to_tlst(x)
+    set_keys(x)
+}
+
+to_df <- function(x){
+    x <- .raw_dat(x)
+    .to_data_frame(x)
+}
+
+to_tdf <- function(x){
+    x <- .raw_dat(x)
+    .to_data_frame(.t(x))
+}
+
+to_mat <- function(x){
+    x <- .raw_dat(x)
+    .to_matrix(x)
+}
+
+to_tmat <- function(x){
+    x <- .raw_dat(x)
+    .to_matrix(.t(x))
+}
+
+.get_parse_fn <- function(x){
+    if(rlang::is_function(x)) return(x)
+
+    if(rlang::is_scalar_character(x)) {
+        # TODO: Consider refactoring to `match.fun`. Safer? Can't limit namespace though...
+        fn <- try(get(x, mode = "function"), silent = TRUE)
+        if(!inherits(fn, "try-error")) return(fn)
+
+        fn <- try(get(paste0("to_", x), mode = "function", pos = "package:mkm"), silent = TRUE)
+        if(!inherits(fn, "try-error")) return(fn)
     }
 
-    keys <- make_key(x[, 1]) # The first column are the keys
-    ## TODO: Relax this assumption? Rely on back ticks?
+    stop("Parse functions must be a function or a scalar character that can be resolved to one.")
+}
 
-    x <- x[ , -1, drop = FALSE]
-    xout <- list()
-    for(a in seq_along(keys)){
-        vals <- x[a,]
+
+.raw_dat <- function(x){
+    err <- "Can only parse a list with an mkm-like structure."
+
+    if(!rlang::is_list(x)) stop(err)
+
+    if(all(names(x) == c("shead", "cname", "rname", "vals"))) return(x)
+
+    if(all(names(x) == c("dat", "format"))) return(.raw_dat(x$dat))
+
+    stop(err)
+}
+
+.t <- function(x){
+    # TODO Checking needed here
+    out <- x
+    out$cname <- x$rname
+    out$rname <- x$cname
+    out$vals <- t(x$vals)
+    return(out)
+}
+
+## TODO: Consider mkm specific functionsm perc, pa, sf, etc
+.to_list <- function(x){
+    out <- list()
+
+    for(a in seq_len(ncol(x$vals))){
+        vals <- x$vals[,a]
         vals <- vals[!is.na(vals)] # Drop empty cells
-        vals <- stringr::str_trim(vals) # Trim. Shouldn't really be needed...
         vals <- utils::type.convert(vals, as.is=TRUE) # Guess
         if(length(vals) > 0){
-            xout[[keys[a]]] <- vals
+            out[[a]] <- vals
         } else {
-            xout[[keys[a]]] <- NA
+            out[[a]] <- NA
         }
     }
-    return(xout)
+
+    names(out) <- vctrs::vec_as_names(x$cname, repair = "minimal")
+
+    return(out)
 }
 
-to_data_frame <- function(x){
-    # Coerces to a dataframe.
-    # Assumes the first row is (col)names.
-    # The first column is promoted to data (if not all NA)
-    if(!is.matrix(x) || !is.character(x) || length(dim(x)) != 2 ) {
-        stop("Input must be a character matrix with two dimensions")
-    }
-    id_col <- x[-1,1]
-    x <- to_matrix(x) # This gets appropriate dimnames
-    x <- as.data.frame(x, stringsAsFactors = FALSE)
-    if(!all(is.na(id_col))){
-        x <- tibble::add_column(.data = x, .id = id_col, .before = 1L)
-    }
-    x <- lapply(x, utils::type.convert, as.is = TRUE)
-    x <- as.data.frame(x, stringsAsFactors = FALSE)
-    rownames(x) <- NULL
-    return(x)
+.to_data_frame <- function(x){
 
+    out <- list()
+
+    for(a in seq_len(ncol(x$vals))){
+        vals <- x$vals[,a]
+        out[[a]] <- utils::type.convert(vals, as.is=TRUE) # Guess
+    }
+
+    names(out) <- vctrs::vec_as_names(x$cname, repair = "minimal")
+
+    if(!all(is.na(x$rname))){
+        id <- list(.id = utils::type.convert(x$rname, as.is=TRUE))
+        out <- c(id, out)
+    }
+
+    out <- as.data.frame(out, optional = TRUE, stringsAsFactors = FALSE)
+
+    return(out)
 }
 
-to_matrix <- function(x){
-    # Coerces to a (potentially non-character) matrix
-    # Assumes the first row is colnames.
-    # Assumes the first column is rownames.
-    if(!is.matrix(x) || !is.character(x) || length(dim(x)) != 2 ) {
-        stop("Input must be a character matrix with two dimensions")
+.to_matrix <- function(x){
+    out <- x$vals
+    if(!all(is.na(x$cname))){
+        colnames(out) <- x$cname
     }
-
-    if(all_is_na(x[1, -1])){
-        cnmes <- NULL
-    } else {
-        cnmes <- make_key(x[1, -1]) ## TODO: Relax this assumption? Rely on back ticks?
+    if(!all(is.na(x$rname))){
+        rownames(out) <- x$rname
     }
-
-    if(all_is_na(x[-1, 1])){
-        rnmes <- NULL
-    } else {
-        rnmes <- make_key(x[-1, 1]) ## TODO: Relax this assumption? Rely on back ticks?
-    }
-
-    x <- utils::type.convert(x[-1, -1, drop = FALSE], as.is = TRUE)
-    colnames(x) <- cnmes
-    rownames(x) <- rnmes
-    return(x)
-}
-
-mat_select <- function(mat, ndx){
-    # stopifnot(length(mat) == length(ndx))
-    mat <- mat[ndx]
-    dim(mat) <- dim(ndx)
-    return(mat)
-}
-
-mat_select_rows <- function(mat, ndx, drop = FALSE){
-    # stopifnot(nrow(mat) == length(ndx))
-    mat[ndx, , drop = drop]
-}
-
-mat_select_cols <- function(mat, ndx, drop = FALSE){
-    # stopifnot(ncol(mat) == length(ndx))
-    mat[ ,ndx, drop = drop]
+    return(out)
 }
