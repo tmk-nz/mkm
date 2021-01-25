@@ -16,7 +16,7 @@
 #'  these are supplied as a named character vector, these names are used for the
 #'  sections in the returned list. Where one or more names are missing or blank
 #'  the search text is used and all names are made syntacitically valid and unique (via
-#'  \code{\link{make_key}}).
+#'  \code{\link{make_keys}}).
 #'
 #'
 #'@return A named list with \code{length(sections)} items representing the

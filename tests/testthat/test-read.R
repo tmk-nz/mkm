@@ -36,7 +36,7 @@ test_that("`section_text` must be valid", {
 })
 
 test_that("`.match_sections` works as expected", {
-    # Correctly identifys a single match and returns a named integer vector
+    # Correctly identifies a single match and returns a named integer vector
     vo <- .match_sections(v, c(subs = "Substrate (% Cover)"))
     expect_type(vo, 'integer')
     expect_named(vo)

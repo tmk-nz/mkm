@@ -1,11 +1,11 @@
 Package: mkm
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Support Tools for Mahinga Kai Monitoring
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Authors@R: person("Daniel", "Pritchard", email = "daniel@pritchard.co",
+                  role = c("aut", "cre"))
+Description: This R package is designed as a replacement to takiwaR with a specific
+    focus on reading, parsing and validating structured spreadsheets.  
 License: MIT + file LICENSE
 Imports: rlang, vctrs, dplyr (>= 0.8.99), stringr, purrr, tidyr, magrittr, readxl, tidyxl
 Encoding: UTF-8

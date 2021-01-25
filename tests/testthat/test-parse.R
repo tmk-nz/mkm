@@ -33,6 +33,16 @@ test_that("`parse_mkm` works as designed", {
 
 })
 
+test_that("`parse_mkm` fails gracefully", {
+    err_func <- function(x){
+        stop("Some catastrophic thing")
+    }
+    pl <- c(subs = to_df, ppc = "tmat", isf = err_func)
+    expect_error(parse_mkm(x = x, definition = pl),
+                 paste0("Error parsing section `isf`\n",
+                        "    Some catastrophic thing"))
+})
+
 test_that("`to_lst` works as designed", {
     d <- to_lst(x$meta)
     expect_type(d, type = "list")

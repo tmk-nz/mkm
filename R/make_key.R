@@ -37,20 +37,20 @@
 #'   \item Non-syntactic characters that appear \strong{before} the first
 #'   letter, number or underscore are replaced by ("filled with") dots.
 #'
-#'   \item Non-syntactic characters or seperators (or sequences of these) that
+#'   \item Non-syntactic characters or separators (or sequences of these) that
 #'   appear \strong{after} this point are replaced with ("collapsed to") a
 #'   single dot OR an underscore.
 #'
 #'   \itemize{
 #'
-#'   \item Which seperator character to use is determined by the input. The
-#'   underscore ("_") character is the default, unles the input string contains
+#'   \item Which separator character to use is determined by the input. The
+#'   underscore ("_") character is the default, unless the input string contains
 #'   dots, in which case, a dot is used.
 #'
 #'   }
 #'
-#'   \item Unless the string is a \link[reserved]{reserved word}, trailing
-#'   non-syntactic characters or seperators are removed.
+#'   \item Unless the string is a \link[base::reserved]{reserved word}, trailing
+#'   non-syntactic characters or separators are removed.
 #'
 #'   \item Dots are prepended, as needed, so that the start of the string
 #'   syntactically valid.
@@ -86,13 +86,10 @@
 #'
 #'   Where [x] is any alphanumeric character string
 #'
+#' @aliases make_keys set_keys
 #'
 #' @return For \code{make_key} a character vector of \code{length(x)}.
 #' @export
-#'
-#' @examples
-#'
-
 make_keys <- function(x){
     # Convert all input to a character
     x <- as.character(x)
@@ -167,6 +164,7 @@ make_keys <- function(x){
   return(x)
 }
 
+#' @export
 set_keys <- function(x){
     # Ensure nmes is a charater string of length(x)
     nmes <- rlang::names2(x)
