@@ -69,13 +69,13 @@
 #'
 #'   \strong{Item}  \tab  \strong{Replacement}  \tab  \strong{Example}\cr
 #'
-#'   "\%"           \tab  "percent"             \tab "\% cover" => "percent cover"\cr
+#'   "\%"           \tab  "percent"             \tab "\% cover" => "percent_cover"\cr
 #'
 #'   "#"            \tab  "number"              \tab "Plants (#) => "plants_number"\cr
 #'
 #'   "$"            \tab  "dollar"              \tab "$ Spent" => "dollar_Spent"\cr
 #'
-#'   "[x]^2"        \tab  "[x] squared"         \tab "1m^2" => "1m_squared"\cr
+#'   "[x]^2"        \tab  "[x] squared"         \tab "1m^2" => "..1m_squared"\cr
 #'
 #'   "[x]^-1"       \tab   "per [x]"            \tab "m s^-1" => "m_per_s"\cr
 #'
@@ -88,7 +88,8 @@
 #'
 #' @aliases make_keys set_keys
 #'
-#' @return For \code{make_key} a character vector of \code{length(x)}.
+#' @return For \code{make_key}, a character vector of \code{length(x)}. For \code{set_keys}, \code{x} but named.
+
 #' @export
 make_keys <- function(x){
     # Convert all input to a character
@@ -110,6 +111,25 @@ make_keys <- function(x){
 
     return(x)
 }
+
+#' @export
+set_keys <- function(x){
+    # Ensure nmes is a character string of length(x)
+    nmes <- rlang::names2(x)
+
+    # If x is actually character string promote the item wherever name is empty
+    if(rlang::is_character(x)){
+        indx <- nmes == ""
+        nmes[indx] <- x[indx]
+    }
+
+    nmes <- make_keys(nmes)
+
+    # Set names and return
+    rlang::set_names(x = x, nm = nmes)
+}
+
+## Not exported below...
 
 .apply_rules <- function(x){
   input <- x # For later (might move that logic up, if needed)
@@ -162,23 +182,6 @@ make_keys <- function(x){
   x <- .fix_reserved_words(x)
 
   return(x)
-}
-
-#' @export
-set_keys <- function(x){
-    # Ensure nmes is a charater string of length(x)
-    nmes <- rlang::names2(x)
-
-    # If x is actually character string promote the item wherever name is empty
-    if(rlang::is_character(x)){
-        indx <- nmes == ""
-        nmes[indx] <- x[indx]
-    }
-
-    nmes <- make_keys(nmes)
-
-    # Set names and return
-    rlang::set_names(x = x, nm = nmes)
 }
 
 .make_syntactic_start <- function(x){

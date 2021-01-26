@@ -7,15 +7,20 @@
 parse_mkm(x, definition = NULL, .default = "to_df")
 }
 \arguments{
-\item{x}{An MKM object, similar to that produced by \code{\link{read_mkm}}}
+\item{x}{A named list, similar to that produced by \code{\link{read_mkm}}}
 
-\item{definition}{A definition object}
+\item{definition}{A named vector, specifying functions or things that can be coerced to functions (see Details).}
 
-\item{.default}{The defult parsing function to use, if none is specified}
+\item{.default}{The default parsing function to use, if none is specified.}
 }
 \value{
-
+A named list with \code{length(sections)} items, each containing the output of the running the function against the named section, or the default function, if none is supplied.
 }
 \description{
 Parse
+}
+\details{
+This function takes a list containing the raw (internal) MKM data objects produced by \code{\link{read_mkm}} and applies a function to each section. The purpose is to provide a flexible way to coerce the raw data (and possibly formatting information) into a usable data structure.
+
+Parsing functions are applied based on name. If no function is specified for a given section, then the function specified by \code{.default} is used. A number of in-built functions are provided (see \code{\link{ff}})
 }

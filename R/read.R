@@ -15,7 +15,7 @@
 #'  Sections are denoted by one or more plain text strings (\code{search_text}). If
 #'  these are supplied as a named character vector, these names are used for the
 #'  sections in the returned list. Where one or more names are missing or blank
-#'  the search text is used and all names are made syntacitically valid and unique (via
+#'  the search text is used and all names are made syntactically valid and unique (via
 #'  \code{\link{make_keys}}).
 #'
 #'
@@ -27,8 +27,8 @@
 #'  \item{\code{dat}: Data extracted from the section}
 #'
 #'  \item{\code{format}: Formatting of the data in the section. Always
-#'  \code{NULL} for \code{.xls} and \code{.csv} files} becuase formatting cannot
-#'  be read from these filetypes.
+#'  \code{NULL} for \code{.xls} and \code{.csv} files} because formatting cannot
+#'  be read from these file types.
 #'
 #'  }
 #'

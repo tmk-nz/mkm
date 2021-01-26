@@ -1,10 +1,14 @@
 #' Parse
 #'
-#' @param x An MKM object, similar to that produced by \code{\link{read_mkm}}
-#' @param definition A definition object
-#' @param .default The defult parsing function to use, if none is specified
+#' @param x A named list, similar to that produced by \code{\link{read_mkm}}
+#' @param definition A named vector, specifying functions or things that can be coerced to functions (see Details).
+#' @param .default The default parsing function to use, if none is specified.
 #'
-#' @return
+#' @details This function takes a list containing the raw (internal) MKM data objects produced by \code{\link{read_mkm}} and applies a function to each section. The purpose is to provide a flexible way to coerce the raw data (and possibly formatting information) into a usable data structure.
+#'
+#' Parsing functions are applied based on name. If no function is specified for a given section, then the function specified by \code{.default} is used. A number of in-built functions are provided (see \code{\link{ff}})
+#'
+#' @return A named list with \code{length(sections)} items, each containing the output of the running the function against the named section, or the default function, if none is supplied.
 #' @export
 parse_mkm <- function(x, definition = NULL, .default = "to_df"){
     # Setup / check parse list
@@ -50,54 +54,87 @@ parse_mkm <- function(x, definition = NULL, .default = "to_df"){
 
 #' Coerce MKM objects to base R types
 #'
-#' to_* functions take raw input (which is a list with 'text' and 'format' components) and produce a base R type (list, dataframe or matrix)
+#' \code{to_*} functions take raw input (which is a list with 'dat' and 'format' components) and produce a base R type (list, data.frame or matrix) or something slightly special.
 #'
-#' @param x
+#' @param x An MKM object, similar to that produced by \code{\link{read_mkm}}
 #'
 #' @return
-#' @export
+#' @aliases to_lst to_tlst to_df to_tdf to_mat to_tmat
 #'
-#' @aliases to_lst to_tlst to_meta to_df to_tdf to_mat to_tmat
+#' @details
+#'
+#' Using custom functions, \code{MKM} can produce any data structure. However, support for three fundamental types are provided.
+#'
+#' \itemize{
+#'
+#' \item \code{to_lst } : Produces a list by reading names from column headers and disregarding any row names.
+#' \item \code{to_tlst} : Produces a list using names from row headers (and disregarding column headers)
+#' \item \code{to_df  } : Produces a data.frame by reading names from column headers and creating an \code{.id} column to hold information in row headers (if any).
+#' \item \code{to_tdf } : Produces a data.frame using names from row headers and creating an \code{.id} column to hold information in column headers (if any).
+#' \item \code{to_mat } : Produces a matrix, with \code{dimnames} set from row and column headers in the direction they appear.
+#' \item \code{to_tmat} : Same as \code{to_mat} but transposed.
+#'
+#' }
+
+#' @name to...
+NULL
+
+#' @export
+#' @rdname to...
 to_lst <- function(x){
     x <- .raw_dat(x)
     .to_list(x)
 }
 
 #' @export
+#' @rdname to...
 to_tlst <- function(x){
     x <- .raw_dat(x)
     .to_list(.t(x))
 }
 
 #' @export
-to_meta <- function(x){
-    x <- to_tlst(x)
-    set_keys(x)
-}
-
-#' @export
+#' @rdname to...
 to_df <- function(x){
     x <- .raw_dat(x)
     .to_data_frame(x)
 }
 
 #' @export
+#' @rdname to...
 to_tdf <- function(x){
     x <- .raw_dat(x)
     .to_data_frame(.t(x))
 }
 
 #' @export
+#' @rdname to...
 to_mat <- function(x){
     x <- .raw_dat(x)
     .to_matrix(x)
 }
 
 #' @export
+#' @rdname to...
 to_tmat <- function(x){
     x <- .raw_dat(x)
     .to_matrix(.t(x))
 }
+
+# #' @export
+# to_ldf <- function(x){
+#
+# }
+
+#' @export
+#' @rdname to...
+to_meta <- function(x){
+    x <- to_tlst(x)
+    set_keys(x)
+}
+
+
+### Not exported below this...
 
 .get_parse_fn <- function(x){
     if(rlang::is_function(x)) return(x)
